@@ -49,7 +49,8 @@ describe("USER SERVICE: find user by email", () => {
 
 		expect(user).toBeInstanceOf(User);
 		expect(user).toHaveProperty("email");
-		expect(user?.id).toBe(userId);
+		expect(user!.id).toBe(userId);
+		// console.log(user!.toJSON());
 	});
 });
 
@@ -67,7 +68,30 @@ describe("USER SERVICE: find user by id", () => {
 
 		expect(user).toBeInstanceOf(User);
 		expect(user!.email).toBe(userEmail); //previously added email with searched id (check to confirm data integrity)
-		console.log(user!.toJSON())
+		// console.log(user!.toJSON());
+	});
+});
+
+describe("USER SERVICE: update user", () => {
+	it("returns the updated user with new name", async () => {
+		const updateName = "alice";
+		const user = await Users.updateUser(userId, { name: updateName });
+
+		expect(user.name).toBe(updateName);
+	});
+
+	it("returns the updated user with new email ", async () => {
+		const updateEmail = "alice@statsset.com";
+		const user = await Users.updateUser(userId, { email: updateEmail });
+
+		expect(user.email).toBe(updateEmail);
+		// console.log(user.toJSON());
+	});
+});
+
+describe("USER SERVICE: delete user", () => {
+	it("deletes a user with the given id", async () => {
+		await expect(Users.deleteUser(userId)).resolves.not.toThrow();
 	});
 });
 

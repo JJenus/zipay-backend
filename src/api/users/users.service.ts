@@ -3,9 +3,9 @@ import Joi from "joi";
 
 const userSchema = Joi.object({
 	id: Joi.string().optional(),
-	name: Joi.string().required(),
-	email: Joi.string().email().required(),
-	password: Joi.string().required(),
+	name: Joi.string().optional(),
+	email: Joi.string().email().optional(),
+	password: Joi.string().optional(),
 });
 
 export async function getAllUsers(): Promise<User[] | null> {
@@ -23,7 +23,7 @@ export async function createUser(userData: UserAttributes): Promise<User> {
 	}
 
 	// Additional checks
-	const emailExists = await findUserByEmail(userData.email);
+	const emailExists = await findUserByEmail(userData.email!);
 	if (emailExists) {
 		throw new Error("Email already exists");
 	}
@@ -51,5 +51,49 @@ export async function findUserById(userId: string): Promise<User | null> {
 		return user;
 	} catch (error) {
 		throw new Error("Failed to retrieve user");
+	}
+}
+
+export async function updateUser(
+	userId: string,
+	userData: UserAttributes
+): Promise<User> {
+	// Input validation
+	const { error } = userSchema.validate(userData);
+
+	if (error) {
+		// throw new Error("Invalid user data");
+		console.log(error.message);
+	}
+
+	// Retrieve the user
+	const user = await findUserById(userId);
+
+	if (!user) {
+		throw new Error("User not found");
+	}
+
+	// Perform the update
+	Object.assign(user, userData);
+
+	try {
+		await user.save();
+		return user;
+	} catch (error) {
+		throw new Error("Failed to update user");
+	}
+}
+
+export async function deleteUser(userId: string): Promise<void> {
+	try {
+		const user = await findUserById(userId);
+
+		if (!user) {
+			throw new Error("User not found");
+		}
+
+		await user.destroy();
+	} catch (error) {
+		throw new Error("Failed to delete user");
 	}
 }

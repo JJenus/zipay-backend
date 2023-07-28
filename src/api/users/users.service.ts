@@ -8,12 +8,17 @@ const userSchema = Joi.object({
 	password: Joi.string().optional(),
 });
 
+const safeUser = (user: User): Partial<User> => {
+	const { password, ...userData } = user.toJSON();
+	return userData;
+};
+
 export async function getAllUsers(): Promise<User[] | null> {
 	const users = await User.findAll();
 	return users;
 }
 
-export async function createUser(userData: UserAttributes): Promise<User> {
+export async function createUser(userData: UserAttributes): Promise<Partial<User>> {
 	// Input validation
 	const { error } = userSchema.validate(userData);
 
@@ -30,7 +35,7 @@ export async function createUser(userData: UserAttributes): Promise<User> {
 
 	try {
 		const user = await User.create(userData);
-		return user;
+		return safeUser(user);
 	} catch (error) {
 		throw new Error("Failed to create user");
 	}

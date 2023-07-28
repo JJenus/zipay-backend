@@ -18,6 +18,12 @@ class User
 	declare name: string;
 	declare email: string;
 	declare password: string;
+
+	public toJSON(): Partial<UserAttributes> {
+		const values = { ...this.get() };
+		delete values.password;
+		return values;
+	}
 }
 
 User.init(

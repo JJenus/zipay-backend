@@ -7,6 +7,8 @@ import helmet from "helmet";
 import MessageResponse from "./interfaces/MessageResponse";
 import * as middlewares from "./common/middlewares";
 
+import api from "./api";
+
 require("dotenv").config();
 
 const app = express();
@@ -35,6 +37,8 @@ app.get("/", (req: Request, res: Response<MessageResponse>) => {
 		message: "Welcome to statsset api",
 	});
 });
+
+app.use("/api", api);
 
 app.use(middlewares.notFound);
 app.use(middlewares.errorHandler);

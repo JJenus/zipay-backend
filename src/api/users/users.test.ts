@@ -33,7 +33,7 @@ describe("USER SERVICE: create user", () => {
 
 		console.log(user.id);
 
-		userId = user.id;
+		userId = user.id!;
 	});
 });
 

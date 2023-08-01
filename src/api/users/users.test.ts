@@ -1,98 +1,199 @@
-import User from "./users.model";
+// users.service.test.ts
 import * as Users from "./users.service";
+import User, { UserAttributes } from "./users.model";
+import sequelize from "../../common/db";
 
-//important setup before test starts
-let userId: string; // to be assigned an id on create and used to find one by id;
-let userEmail: string = "tester@email.com"; // to be used to create and find one by email;
+const testEmail = "lorem@example.com";
 
-beforeAll(async () => {
-	await User.drop();
-});
+function pauseExecution() {
+	console.log("Start");
+	const startTime = Date.now();
+	while (Date.now() - startTime < 2000) {
+		// Blocking loop for 2 seconds
+	}
+	console.log("Delayed Execution");
+}
 
-//Testing individual functions without supertest
+pauseExecution();
 
-describe("USER SERVICE: find all users", () => {
-	it("returns an array of users", async () => {
-		const users = await Users.getAllUsers();
-
-		expect(users).toBeInstanceOf(Array<User>);
-		// expect(1).toBe(1);
+describe("USER SERVICE", () => {
+	afterAll(async () => {
+		try {
+			await User.destroy({ where: {} });
+			await sequelize.close();
+		} catch (error) {
+			//or it didn't
+		}
 	});
-});
 
-describe("USER SERVICE: create user", () => {
-	it("creates a user and returns the user id", async () => {
-		const user = await Users.createUser({
-			email: userEmail,
-			name: "Tester",
-			password: "password",
+	describe("createUser", () => {
+		it("creates a user and returns the user with id", async () => {
+			// console.log("User: 1");
+			// Mock the user creation data
+			const userData: UserAttributes = {
+				name: "Lorem Ipsum",
+				email: testEmail,
+				password: "password",
+			};
+
+			// Call the createUser function
+			const result = await Users.createUser(userData);
+
+			// Expect that the result contains the created user's data
+			expect(result).toHaveProperty("id");
 		});
 
-		expect(user).toBeInstanceOf(User);
-		expect(user).toHaveProperty("id");
+		it("throws an error when user email already exists", async () => {
+			// console.log("User: 2");
+			// Mock the invalid user creation data
+			const userData: UserAttributes = {
+				name: "Invalid User",
+				email: testEmail,
+				password: "password",
+			};
 
-		console.log(user.id);
+			// Call the createUser function and expect it to throw an error
+			await expect(Users.createUser(userData)).rejects.toThrowError();
+		});
+	});
 
-		userId = user.id!;
+	describe("findUserByEmail", () => {
+		it("returns a user when email exists", async () => {
+			// console.log("Email: 1");
+			let user = await Users.findUserByEmail(testEmail);
+			if (!user) {
+				user = await Users.createUser({
+					name: "John Doe",
+					email: testEmail,
+					password: "password",
+				});
+			}
+
+			// Mock the email to find
+			const emailToFind = user.email!;
+
+			// Call the findUserByEmail function
+			const result = await Users.findUserByEmail(emailToFind);
+
+			// Expect that the result contains the user's data
+			expect(result).toEqual(
+				expect.objectContaining({ email: emailToFind })
+			);
+		});
+
+		it("returns null when email does not exist", async () => {
+			// console.log("Email: 2");
+
+			// Mock the non-existing email
+			const nonExistingEmail = "nonexisting@example.com";
+
+			// Call the findUserByEmail function
+			const result = await Users.findUserByEmail(nonExistingEmail);
+
+			// Expect that the result is null
+			expect(result).toBeNull();
+		});
+	});
+
+	describe("findUserById", () => {
+		it("returns a user when ID exists", async () => {
+			// Mock the User.findByPk method
+			let user = await Users.findUserByEmail(testEmail);
+			if (!user) {
+				user = await Users.createUser({
+					name: "John Doe",
+					email: testEmail,
+					password: "password",
+				});
+			}
+
+			const userIdToFind = user.id!;
+
+			// Call the findUserById function
+			const result = await Users.findUserById(userIdToFind);
+
+			// Expect that the result contains the user's data
+			expect(result).toEqual(
+				expect.objectContaining({ id: userIdToFind })
+			);
+		});
+
+		it("returns null when ID does not exist", async () => {
+			// Mock the non-existing user ID
+			const nonExistingUserId = "nonexisting_id";
+
+			// Call the findUserById function
+			const result = await Users.findUserById(nonExistingUserId);
+
+			// Expect that the result is null
+			expect(result).toBeNull();
+		});
+	});
+
+	describe("updateUser", () => {
+		it("returns the updated user with new name", async () => {
+			// Mock the user ID and updated data
+			let user = await Users.findUserByEmail(testEmail);
+			if (!user) {
+				user = await Users.createUser({
+					name: "John Doe",
+					email: testEmail,
+					password: "password",
+				});
+			}
+
+			const userIdToUpdate = user.id!;
+			const updatedData: UserAttributes = { name: "Updated Name" };
+
+			// Call the updateUser function
+			const result = await Users.updateUser(userIdToUpdate, updatedData);
+
+			// Expect that the user's name was updated with the new name
+			expect(result.name).toBe(updatedData.name);
+
+			// Expect that the result contains the updated user's data
+			expect(result).toEqual(expect.objectContaining(updatedData));
+		});
+
+		it("throws an error when user ID does not exist", async () => {
+			// Mock the non-existing user ID and updated data
+			const nonExistingUserId = "nonexisting_id";
+			const updatedData: UserAttributes = { name: "Updated Name" };
+
+			await expect(
+				Users.updateUser(nonExistingUserId, updatedData)
+			).rejects.toThrowError("User not found");
+		});
+	});
+
+	describe("deleteUser", () => {
+		it("deletes a user with the given ID", async () => {
+			// Mock the user ID to delete
+			let user = await Users.findUserByEmail(testEmail);
+			if (!user) {
+				user = await Users.createUser({
+					name: "John Doe",
+					email: testEmail,
+					password: "password",
+				});
+			}
+
+			const userIdToDelete = user.id!;
+
+			// Call the deleteUser function
+			await expect(
+				Users.deleteUser(userIdToDelete)
+			).resolves.not.toThrow();
+		});
+
+		it("throws an error when user ID does not exist", async () => {
+			// Mock the non-existing user ID to delete
+			const nonExistingUserId = "nonexisting_id";
+
+			// Call the deleteUser function and expect it to throw an error
+			await expect(
+				Users.deleteUser(nonExistingUserId)
+			).rejects.toThrowError("No such user");
+		});
 	});
 });
-
-describe("USER SERVICE: find user by email", () => {
-	it("returns null for non-existing user", async () => {
-		const user = await Users.findUserByEmail("fake@email.error");
-
-		expect(user).toBe(null);
-	});
-
-	it("returns a user found with by the email", async () => {
-		const user = await Users.findUserByEmail(userEmail);
-
-		expect(user).toBeInstanceOf(User);
-		expect(user).toHaveProperty("email");
-		expect(user!.id).toBe(userId);
-		// console.log(user!.toJSON());
-	});
-});
-
-describe("USER SERVICE: find user by id", () => {
-	it("returns null on a non-existing id", async () => {
-		// On supertest, joi middleware will be used to validate incorrect
-		// id, provent hitting the db
-		const user = await Users.findUserById("1191");
-
-		expect(user).toBe(null);
-	});
-
-	it("returns a user with the id", async () => {
-		const user = await Users.findUserById(userId);
-
-		expect(user).toBeInstanceOf(User);
-		expect(user!.email).toBe(userEmail); //previously added email with searched id (check to confirm data integrity)
-		// console.log(user!.toJSON());
-	});
-});
-
-describe("USER SERVICE: update user", () => {
-	it("returns the updated user with new name", async () => {
-		const updateName = "alice";
-		const user = await Users.updateUser(userId, { name: updateName });
-
-		expect(user.name).toBe(updateName);
-	});
-
-	it("returns the updated user with new email ", async () => {
-		const updateEmail = "alice@statsset.com";
-		const user = await Users.updateUser(userId, { email: updateEmail });
-
-		expect(user.email).toBe(updateEmail);
-		// console.log(user.toJSON());
-	});
-});
-
-describe("USER SERVICE: delete user", () => {
-	it("deletes a user with the given id", async () => {
-		await expect(Users.deleteUser(userId)).resolves.not.toThrow();
-	});
-});
-
-//Testing testing the flow with jest

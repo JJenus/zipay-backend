@@ -1,5 +1,10 @@
-import sequelize from "./api/db";
+import sequelize from "./common/db";
 
 global.afterAll(async () => {
-	await sequelize.close();
+	// try {
+	// 	await sequelize.close();
+	// 	console.log("Database connection closed successfully.");
+	// } catch (error) {
+	// 	console.error("Error closing database connection:", error);
+	// }
 });

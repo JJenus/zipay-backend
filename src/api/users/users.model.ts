@@ -1,4 +1,4 @@
-import sequelize from "../db";
+import sequelize from "../../common/db";
 import { DataTypes, Model, Optional } from "sequelize";
 
 export interface UserAttributes {
@@ -36,7 +36,6 @@ User.init(
 		name: {
 			type: DataTypes.STRING,
 			allowNull: false,
-			unique: true,
 		},
 		email: {
 			type: DataTypes.STRING,
@@ -58,6 +57,11 @@ User.init(
 	}
 );
 
-User.sync({ force: true, alter: true });
+if(process.env.NODE_ENV !== "production"){
+	User.sync({ force: true, alter: true })
+} else {
+	User.sync({ force: true, alter: true })
+}
+
 
 export default User;

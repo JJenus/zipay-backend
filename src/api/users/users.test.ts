@@ -1,31 +1,28 @@
 // users.service.test.ts
+import request from "supertest";
 import * as Users from "./users.service";
-import User, { UserAttributes } from "./users.model";
+import User, { UserAttributes, UserUpdateAttributes } from "./users.model";
 import sequelize from "../../common/db";
+import app from "../../app";
+import { HTTPStatusCode } from "../../common/HTTPStatusCode";
 
 const testEmail = "lorem@example.com";
+// const gUser: UserAttributes = {
+// 	name: "Lorem Ipsum",
+// 	email: testEmail,
+// 	password: "password",
+// };
 
-function pauseExecution() {
-	console.log("Start");
-	const startTime = Date.now();
-	while (Date.now() - startTime < 2000) {
-		// Blocking loop for 2 seconds
+afterAll(async () => {
+	try {
+		await User.destroy({ where: {} });
+		await sequelize.close();
+	} catch (error) {
+		//or it didn't
 	}
-	console.log("Delayed Execution");
-}
-
-pauseExecution();
+});
 
 describe("USER SERVICE", () => {
-	afterAll(async () => {
-		try {
-			await User.destroy({ where: {} });
-			await sequelize.close();
-		} catch (error) {
-			//or it didn't
-		}
-	});
-
 	describe("createUser", () => {
 		it("creates a user and returns the user with id", async () => {
 			// console.log("User: 1");
@@ -81,17 +78,16 @@ describe("USER SERVICE", () => {
 			);
 		});
 
-		it("returns null when email does not exist", async () => {
+		it("throws error when email does not exist", async () => {
 			// console.log("Email: 2");
 
 			// Mock the non-existing email
 			const nonExistingEmail = "nonexisting@example.com";
 
 			// Call the findUserByEmail function
-			const result = await Users.findUserByEmail(nonExistingEmail);
-
-			// Expect that the result is null
-			expect(result).toBeNull();
+			await expect(
+				Users.findUserByEmail(nonExistingEmail)
+			).rejects.toThrowError();
 		});
 	});
 
@@ -143,7 +139,7 @@ describe("USER SERVICE", () => {
 			}
 
 			const userIdToUpdate = user.id!;
-			const updatedData: UserAttributes = { name: "Updated Name" };
+			const updatedData: Partial<User> = { name: "Updated Name" };
 
 			// Call the updateUser function
 			const result = await Users.updateUser(userIdToUpdate, updatedData);
@@ -158,7 +154,7 @@ describe("USER SERVICE", () => {
 		it("throws an error when user ID does not exist", async () => {
 			// Mock the non-existing user ID and updated data
 			const nonExistingUserId = "nonexisting_id";
-			const updatedData: UserAttributes = { name: "Updated Name" };
+			const updatedData: Partial<User> = { name: "Updated Name" };
 
 			await expect(
 				Users.updateUser(nonExistingUserId, updatedData)
@@ -195,5 +191,54 @@ describe("USER SERVICE", () => {
 				Users.deleteUser(nonExistingUserId)
 			).rejects.toThrowError("No such user");
 		});
+	});
+});
+
+describe("USER ROUTER", () => {
+	describe("GET /users", () => {
+		it("returns an array of users", async () =>
+			request(app)
+				.get("/api/users")
+				.set("Accept", "application/json")
+				.expect("Content-type", /json/)
+				.expect(HTTPStatusCode.OK)
+				.then((res) => {
+					expect(res.body).toHaveProperty("length");
+				}));
+	});
+
+	describe("POST /users", () => {
+		it("should create and return a user with id", async () => {
+			// await User.destroy({
+			// 	where: {
+			// 		email: testEmail,
+			// 	},
+			// });
+			return request(app)
+				.post("/api/users")
+				.set("Accept", "application/json")
+				.send({
+					name: "Lorem Ipsum",
+					email: testEmail,
+					password: "password",
+				})
+				.expect("Content-type", /json/)
+				.expect(HTTPStatusCode.INTERNAL_SERVER_ERROR)
+				.then((res) => {
+					console.log(res.body);
+					expect(res.body).toHaveProperty("id");
+				});
+		});
+
+		it("should respond with an error if user is invalid", async () =>
+			request(app)
+				.post("/api/users")
+				.set("Accept", "application/json")
+				.send({ content: "" })
+				.expect("Content-type", /json/)
+				.expect(HTTPStatusCode.VALIDATION_ERROR)
+				.then((res) => {
+					expect(res.body).toHaveProperty("message");
+				}));
 	});
 });

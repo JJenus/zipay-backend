@@ -1,17 +1,20 @@
 import sequelize from "../../common/db";
 import { DataTypes, Model, Optional } from "sequelize";
+import zod from "zod";
 
-export interface UserAttributes {
-	id?: string;
-	name?: string;
-	email?: string;
-	password?: string;
-}
+export const UserAttributes = zod.object({
+	id: zod.string().uuid("Invalid user ID").optional(),
+	name: zod.string(),
+	email: zod.string().email(),
+	password: zod.string(),
+});
+export type UserAttributes = zod.infer<typeof UserAttributes>;
 
-interface UserCreationAttributes extends Optional<UserAttributes, "id"> {}
+export const UserUpdateAttributes = UserAttributes.omit({name: true, email: true, password: true}).required();
+export type UserUpdateAttributes = zod.infer<typeof UserUpdateAttributes>;
 
 class User
-	extends Model<UserAttributes, UserCreationAttributes>
+	extends Model<UserAttributes, UserAttributes>
 	implements UserAttributes
 {
 	declare id: string;
@@ -20,8 +23,7 @@ class User
 	declare password: string;
 
 	public toJSON(): Partial<UserAttributes> {
-		const values = { ...this.get() };
-		delete values.password;
+		const {password, ...values} = { ...this.get() };
 		return values;
 	}
 }
@@ -57,11 +59,10 @@ User.init(
 	}
 );
 
-if(process.env.NODE_ENV !== "production"){
-	User.sync({ force: true, alter: true })
+if (process.env.NODE_ENV !== "production") {
+	User.sync({ force: true, alter: true });
 } else {
-	User.sync({ force: true, alter: true })
+	User.sync({ force: true, alter: true });
 }
-
 
 export default User;

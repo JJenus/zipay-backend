@@ -1,20 +1,7 @@
 // import { debugLogger } from "../../common/logger";
-import User, { UserAttributes } from "./users.model";
-// import Joi from "joi";
+import User, { UserAttributes, UserUpdateAttributes } from "./users.model";
 
-// const userSchema = Joi.object({
-// 	id: Joi.string().optional(),
-// 	name: Joi.string().optional(),
-// 	email: Joi.string().email().optional(),
-// 	password: Joi.string().optional(),
-// });
-
-const safeUser = (user: User): Partial<User> => {
-	const { password, ...userData } = user.toJSON();
-	return userData;
-};
-
-export async function findAll(): Promise<User[] | null> {
+export async function findAll(): Promise<User[]> {
 	try {
 		const users = await User.findAll();
 		return users;
@@ -28,14 +15,6 @@ export async function findAll(): Promise<User[] | null> {
 export async function createUser(
 	userData: UserAttributes
 ): Promise<Partial<User>> {
-	// Input validation
-	// const { error } = userSchema.validate(userData);
-
-	// if (error) {
-	// 	console.log("Validation Error: " + error.message);
-	// 	throw new Error("Invalid user data");
-	// }
-
 	// Additional checks
 	let userExists: User | null = null;
 
@@ -52,7 +31,7 @@ export async function createUser(
 
 	try {
 		const user = await User.create(userData);
-		return safeUser(user);
+		return user.toJSON();
 	} catch (error) {
 		console.log(error);
 		throw new Error("Failed to create user");
@@ -64,7 +43,7 @@ export async function findUserByEmail(
 ): Promise<Partial<User> | null> {
 	try {
 		const user = await User.findOne({ where: { email } });
-		return user;
+		return user!.toJSON();
 	} catch (error) {
 		// console.log(error);
 		throw new Error("User not found");
@@ -82,16 +61,8 @@ export async function findUserById(userId: string): Promise<User | null> {
 
 export async function updateUser(
 	userId: string,
-	userData: UserAttributes
-): Promise<User> {
-	// Input validation
-	// const { error } = userSchema.validate(userData);
-
-	// if (error) {
-	// 	// throw new Error("Invalid user data");
-	// 	console.log(error.message);
-	// }
-
+	userData: Partial<User>
+): Promise<Partial<User>> {
 	// Retrieve the user
 	const user = await findUserById(userId);
 
@@ -99,8 +70,19 @@ export async function updateUser(
 		throw new Error("User not found");
 	}
 
-	// Perform the update
-	Object.assign(user, userData);
+	// Not allowed to update password here
+	if (userData?.password) {
+		throw new Error("Attempt to change password");
+	}
+
+	user.setAttributes(userData);
+
+	// if (userData?.email) {
+	// 	user.email = userData.email;
+	// }
+	// if (userData?.name) {
+	// 	user.name = userData.name;
+	// }
 
 	try {
 		await user.save();

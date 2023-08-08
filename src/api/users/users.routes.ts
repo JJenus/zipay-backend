@@ -18,4 +18,22 @@ router.put(
 	userController.updateUser
 );
 
+router.get(
+	"/:id",
+	validateRequest({ params: ParamsWithId }),
+	userController.findUser
+);
+
+router.post(
+	"/find",
+	validateRequest({ body: UserUpdateAttributes }),
+	userController.findUserByEmail
+);
+
+router.delete(
+	"/:id",
+	validateRequest({ params: ParamsWithId }),
+	userController.deleteUser
+);
+
 export default router;

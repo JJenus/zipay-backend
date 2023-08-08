@@ -10,7 +10,12 @@ export const UserAttributes = zod.object({
 });
 export type UserAttributes = zod.infer<typeof UserAttributes>;
 
-export const UserUpdateAttributes = UserAttributes.omit({name: true, email: true, password: true}).required();
+export const UserUpdateAttributes = zod.object({
+	id: zod.string().uuid("Invalid user ID").optional(),
+	name: zod.string().optional(),
+	email: zod.string().email().optional(),
+	password: zod.string().optional(),
+});
 export type UserUpdateAttributes = zod.infer<typeof UserUpdateAttributes>;
 
 class User
@@ -23,7 +28,7 @@ class User
 	declare password: string;
 
 	public toJSON(): Partial<UserAttributes> {
-		const {password, ...values} = { ...this.get() };
+		const { password, ...values } = { ...this.get() };
 		return values;
 	}
 }

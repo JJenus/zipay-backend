@@ -1,4 +1,5 @@
 // import { debugLogger } from "../../common/logger";
+import { ZodError, ZodIssue, ZodIssueCode } from "zod";
 import User, { UserAttributes, UserUpdateAttributes } from "./users.model";
 
 export async function findAll(): Promise<User[]> {
@@ -26,7 +27,13 @@ export async function createUser(
 
 	if (userExists !== null) {
 		// console.log("Email already exists");
-		throw new Error("Email already exists");
+		const issue: ZodIssue = {
+			message: "Email already exists",
+			code: ZodIssueCode.custom,
+			path: [],
+		};
+
+		throw new ZodError([issue]);
 	}
 
 	try {
@@ -38,11 +45,12 @@ export async function createUser(
 	}
 }
 
-export async function findUserByEmail(
-	email: string
-): Promise<Partial<User> | null> {
+export async function findUserByEmail(email: string): Promise<Partial<User>> {
 	try {
 		const user = await User.findOne({ where: { email } });
+		if (!user) {
+			throw new Error();
+		}
 		return user!.toJSON();
 	} catch (error) {
 		// console.log(error);
@@ -50,12 +58,15 @@ export async function findUserByEmail(
 	}
 }
 
-export async function findUserById(userId: string): Promise<User | null> {
+export async function findUserById(userId: string): Promise<User> {
 	try {
 		const user = await User.findByPk(userId);
+		if (!user) {
+			throw new Error();
+		}
 		return user;
 	} catch (error) {
-		throw new Error("Failed to retrieve user");
+		throw new Error("User not found");
 	}
 }
 
@@ -93,21 +104,15 @@ export async function updateUser(
 }
 
 export async function deleteUser(userId: string): Promise<void> {
-	// try {
-	// 	await User.destroy({where: {id: userId}})
-	// } catch (error) {
-	// 	throw new Error("Failed to delete user");
-	// }
-
 	let user;
 
 	try {
-		user = await findUserById(userId);
+		user = await User.findByPk(userId);
 		if (!user) {
 			throw new Error();
 		}
 	} catch (error) {
-		throw new Error("No such user");
+		throw new Error("User not found");
 	}
 
 	try {

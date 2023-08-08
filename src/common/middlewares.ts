@@ -20,7 +20,12 @@ export function errorHandler(
 		res.statusCode !== HTTPStatusCode.OK
 			? res.statusCode
 			: HTTPStatusCode.INTERNAL_SERVER_ERROR;
+
 	res.status(statusCode);
+
+	if (error.message.toLocaleLowerCase().includes("not found")) {
+		res.status(HTTPStatusCode.NOT_FOUND);
+	}
 
 	res.json({
 		message: error.message,

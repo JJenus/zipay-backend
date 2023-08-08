@@ -2,21 +2,30 @@
 import request from "supertest";
 import * as Users from "./users.service";
 import User, { UserAttributes, UserUpdateAttributes } from "./users.model";
-import sequelize from "../../common/db";
 import app from "../../app";
 import { HTTPStatusCode } from "../../common/HTTPStatusCode";
 
 const testEmail = "lorem@example.com";
-// const gUser: UserAttributes = {
-// 	name: "Lorem Ipsum",
-// 	email: testEmail,
-// 	password: "password",
-// };
+const prefix = "1";
+var id = "d3d2975a-f4c9-47e2-9a80-1bb1b55e103a";
+
+function sleep(ms: number) {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 afterAll(async () => {
 	try {
-		await User.destroy({ where: {} });
-		await sequelize.close();
+		await User.destroy({
+			where: {
+				id: testEmail,
+			},
+		});
+		await User.destroy({
+			where: {
+				id: prefix + testEmail,
+			},
+		});
+		// await sequelize.close();
 	} catch (error) {
 		//or it didn't
 	}
@@ -35,7 +44,7 @@ describe("USER SERVICE", () => {
 
 			// Call the createUser function
 			const result = await Users.createUser(userData);
-
+			id = result.id!;
 			// Expect that the result contains the created user's data
 			expect(result).toHaveProperty("id");
 		});
@@ -114,15 +123,14 @@ describe("USER SERVICE", () => {
 			);
 		});
 
-		it("returns null when ID does not exist", async () => {
+		it("throws an error when ID does not exist", async () => {
 			// Mock the non-existing user ID
 			const nonExistingUserId = "nonexisting_id";
 
-			// Call the findUserById function
-			const result = await Users.findUserById(nonExistingUserId);
-
-			// Expect that the result is null
-			expect(result).toBeNull();
+			// Expect that the result throws error
+			await expect(
+				Users.findUserById(nonExistingUserId)
+			).rejects.toThrowError();
 		});
 	});
 
@@ -189,7 +197,7 @@ describe("USER SERVICE", () => {
 			// Call the deleteUser function and expect it to throw an error
 			await expect(
 				Users.deleteUser(nonExistingUserId)
-			).rejects.toThrowError("No such user");
+			).rejects.toThrowError("User not found");
 		});
 	});
 });
@@ -209,23 +217,18 @@ describe("USER ROUTER", () => {
 
 	describe("POST /users", () => {
 		it("should create and return a user with id", async () => {
-			// await User.destroy({
-			// 	where: {
-			// 		email: testEmail,
-			// 	},
-			// });
 			return request(app)
 				.post("/api/users")
 				.set("Accept", "application/json")
 				.send({
 					name: "Lorem Ipsum",
-					email: testEmail,
+					email: prefix + testEmail,
 					password: "password",
 				})
 				.expect("Content-type", /json/)
-				.expect(HTTPStatusCode.INTERNAL_SERVER_ERROR)
+				.expect(HTTPStatusCode.OK)
 				.then((res) => {
-					console.log(res.body);
+					// console.log(res.body);
 					expect(res.body).toHaveProperty("id");
 				});
 		});
@@ -240,5 +243,164 @@ describe("USER ROUTER", () => {
 				.then((res) => {
 					expect(res.body).toHaveProperty("message");
 				}));
+	});
+
+	describe(`GET /users/:id`, () => {
+		it(`returns a of user with id`, async () => {
+			let user: Partial<User>;
+			user = await Users.createUser({
+				name: "Pickup Pickup",
+				password: "829hdid-jdk",
+				email: `123${testEmail}`,
+			});
+			while (!user) {}
+			const userId = user.id;
+			request(app)
+				.get(`/api/users/${userId}`)
+				.set("Accept", "application/json")
+				.expect("Content-type", /json/)
+				.expect(HTTPStatusCode.OK)
+				.then((res) => {
+					expect(res.body).toHaveProperty("name");
+					User.destroy({
+						where: {
+							id: userId,
+						},
+					});
+				});
+		});
+
+		it(`returns throws an error user invalid id`, async () =>
+			request(app)
+				.get(`/api/users/invalid-5ss_ID`)
+				.set("Accept", "application/json")
+				.expect("Content-type", /json/)
+				.expect(HTTPStatusCode.VALIDATION_ERROR)
+				.then((res) => {
+					expect(res.body).toHaveProperty("message");
+				}));
+
+		it(`returns throws user not found error`, async () =>
+			request(app)
+				.get(`/api/users/${id}`)
+				.set("Accept", "application/json")
+				.expect("Content-type", /json/)
+				.expect(HTTPStatusCode.NOT_FOUND)
+				.then((res) => {
+					expect(res.body).toHaveProperty("message");
+				}));
+	});
+
+	describe(`POST /users/find`, () => {
+		it(`returns a of user with email`, async () => {
+			let user: Partial<User>;
+			const userIEmail = `123x${testEmail}`;
+			user = await Users.createUser({
+				name: "Pickup Pickup",
+				password: "829hdid-jdk",
+				email: userIEmail,
+			});
+			while (!user) {}
+
+			request(app)
+				.post(`/api/users/find`)
+				.set("Accept", "application/json")
+				.send({ email: userIEmail })
+				.expect("Content-type", /json/)
+				.expect(HTTPStatusCode.OK)
+				.then((res) => {
+					expect(res.body).toHaveProperty("name");
+					User.destroy({
+						where: { email: userIEmail },
+					});
+				});
+		});
+
+		it(`returns throws an error user invalid email`, async () =>
+			request(app)
+				.post(`/api/users/find`)
+				.set("Accept", "application/json")
+				.send({ email: "testEmail" })
+				.expect("Content-type", /json/)
+				.expect(HTTPStatusCode.VALIDATION_ERROR)
+				.then((res) => {
+					expect(res.body).toHaveProperty("message");
+				}));
+
+		it(`returns throws user not found error`, async () =>
+			request(app)
+				.post(`/api/users/find`)
+				.set("Accept", "application/json")
+				.send({ email: `non_existing_${testEmail}` })
+				.expect("Content-type", /json/)
+				.expect(HTTPStatusCode.NOT_FOUND)
+				.then((res) => {
+					expect(res.body).toHaveProperty("message");
+				}));
+	});
+
+	describe(`PUT /users/:id`, () => {
+		it(`should update a user with id`, async () => {
+			let user: Partial<User>;
+			const userIEmail = `1232x${testEmail}`;
+			user = await Users.createUser({
+				name: "Pickup Pickup",
+				password: "829hdid-jdk",
+				email: userIEmail,
+			});
+			while (!user) {}
+			const userId = user.id;
+
+			request(app)
+				.put(`/api/users/${userId}`)
+				.set("Accept", "application/json")
+				.send({ name: "Agbado" })
+				.expect("Content-type", /json/)
+				.expect(HTTPStatusCode.OK)
+				.then((res) => {
+					expect(res.body).toHaveProperty("name");
+					User.destroy({
+						where: { email: userIEmail },
+					});
+				});
+		});
+
+		it(`throws error on password update`, async () =>
+			request(app)
+				.put(`/api/users/find`)
+				.set("Accept", "application/json")
+				.send({ email: "testEmail" })
+				.expect("Content-type", /json/)
+				.expect(HTTPStatusCode.VALIDATION_ERROR)
+				.then((res) => {
+					expect(res.body).toHaveProperty("message");
+				}));
+	});
+
+	describe(`DELETE /users/:id`, () => {
+		it(`should delete user with id`, async () => {
+			let user: Partial<User>;
+			user = await Users.createUser({
+				name: "Pickup Pickup",
+				password: "829hdid-jdk",
+				email: `123xx${testEmail}`,
+			});
+
+			while (!user) {}
+			const userId = user.id;
+
+			request(app)
+				.delete(`/api/users/${userId}`)
+				.set("Accept", "application/json")
+				.expect("Content-type", /json/)
+				.expect(HTTPStatusCode.OK);
+		});
+
+		it(`throws validation error`, async () =>
+			request(app)
+				.delete(`/api/users/xxx`)
+				.set("Accept", "application/json")
+				.expect("Content-type", /json/)
+				.expect(HTTPStatusCode.VALIDATION_ERROR));
 	});
 });

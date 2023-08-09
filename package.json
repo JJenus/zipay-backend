@@ -1,7 +1,7 @@
 {
-	"name": "statsset",
+	"name": "zipay",
 	"version": "1.0.0",
-	"description": "\"A sports analysis and prediction platform is a comprehensive website that offers users valuable insights, statistical data, and expert predictions in the field of sports. This platform combines the power of data analytics, statistical modeling, and sports expertise to provide users with in-depth analysis and accurate predictions for various sporting events.\"",
+	"description": "\"An online bank, a financial solution\"",
 	"main": "src/index.ts",
 	"scripts": {
 		"start": "ts-node src/index.ts",

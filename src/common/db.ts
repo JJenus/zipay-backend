@@ -1,6 +1,6 @@
 import { Sequelize } from "sequelize";
 
-const db = process.env.DB_NAME || "statsset_db";
+const db = process.env.DB_NAME || "zipay_db";
 const user = process.env.DB_USER || "root";
 const pass = process.env.DB_PASSWORD || "";
 const host = process.env.DB_HOST || "localhost";

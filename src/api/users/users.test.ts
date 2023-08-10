@@ -247,13 +247,17 @@ describe("USER ROUTER", () => {
 
 	describe(`GET /users/:id`, () => {
 		it(`returns a of user with id`, async () => {
-			let user: Partial<User>;
-			user = await Users.createUser({
-				name: "Pickup Pickup",
-				password: "829hdid-jdk",
-				email: `123${testEmail}`,
-			});
-			while (!user) {}
+			let user: Partial<User> | null = null;
+
+			while (!user) {
+				try {
+					user = await Users.createUser({
+						name: "Pickup Pickup",
+						password: "829hdid-jdk",
+						email: `123${testEmail}`,
+					});
+				} catch (error) {}
+			}
 			const userId = user.id;
 			request(app)
 				.get(`/api/users/${userId}`)

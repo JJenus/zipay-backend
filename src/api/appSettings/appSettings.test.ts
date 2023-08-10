@@ -1,10 +1,10 @@
 import request from "supertest";
-import { HTTPStatusCode } from "../../common/HTTPStatusCode";
 import app from "../../app";
+import { HTTPStatusCode } from "../../common/HTTPStatusCode";
 
 describe("APPLICATION SETTINGS", () => {
 	describe("create settings", () => {
-		it("should create and return settings", async () => {
+		it("should create and return settings", async () =>
 			request(app)
 				.post("/api/app-settings")
 				.set("Accept", "application/json")
@@ -16,7 +16,6 @@ describe("APPLICATION SETTINGS", () => {
 				.expect(HTTPStatusCode.OK)
 				.then((res) => {
 					expect(res.body).toHaveProperty("id");
-				});
-		});
+				}));
 	});
 });

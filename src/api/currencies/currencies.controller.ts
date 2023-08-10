@@ -18,11 +18,11 @@ export const findAll = async (
 
 export const findCurrencyById = async (
 	req: Request<ParamsWithId>,
-	res: Response<Currency[]>,
+	res: Response<Currency>,
 	next: NextFunction
 ) => {
 	try {
-		const settings = await Currencies.findAll();
+		const settings = await Currencies.findCurrencyById(req.params.id);
 		res.json(settings);
 	} catch (error) {
 		next(error);

@@ -5,7 +5,8 @@ import { Request, Response, Router } from "express";
 import MessageResponse from "../interfaces/MessageResponse";
 import usersRouter from "./users/users.routes";
 import appSettingsRouter from "./appSettings/appSettings.routes";
-import currencyRouter from "./currencies/currencies.routes"
+import currencyRouter from "./currencies/currencies.routes";
+import notificationRouter from "./notifications/notifications.routes";
 
 const apiRouter = Router();
 
@@ -17,6 +18,7 @@ apiRouter.get("/", (req: Request, res: Response<MessageResponse>) => {
 
 apiRouter.use("/users", usersRouter);
 apiRouter.use("/app-settings", appSettingsRouter);
-apiRouter.use("/currencies", currencyRouter)
+apiRouter.use("/currencies", currencyRouter);
+apiRouter.use("/notifications", notificationRouter);
 
 export default apiRouter;

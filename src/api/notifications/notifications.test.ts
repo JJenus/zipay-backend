@@ -1,13 +1,14 @@
 import request from "supertest";
 import app from "../../app";
 import { HTTPStatusCode } from "../../common/HTTPStatusCode";
-import { CurrencyAttr } from "./currencies.model";
+import { NotificationAttr } from "./notifications.model";
+import { NotificationStatus, NotificationType } from "./notifications";
 
-describe("CURRENCIES", () => {
-	describe("GET /api/currencies", () => {
-		it("should return an array of currencies", async () =>
+describe("NOTIFICATIONS", () => {
+	describe("GET /api/notifications/:id", () => {
+		it("should return an array of notifications", async () =>
 			request(app)
-				.get("/api/currencies")
+				.get("/api/notifications/ec84100d-32d0-4b90-b985-93aea5874116")
 				.set("Accept", "application/json")
 				.expect("Content-Type", /json/)
 				.expect(HTTPStatusCode.OK)
@@ -16,22 +17,23 @@ describe("CURRENCIES", () => {
 				}));
 	});
 
-	describe("POST /api/currencies", () => {
-		const currency: CurrencyAttr = {
-			country: "country",
-			code: "NGN",
-			symbol: "NGN",
+	describe("POST /api/notifications", () => {
+		const notification: NotificationAttr = {
+			userId: "ec84100d-32d0-4b90-b985-93aea5874116",
+			status: NotificationStatus.UNREAD,
+			type: NotificationType.ACCOUNTUPDATE,
+			message: "Message must not be empty",
 		};
-		it("should saves currency to db", async () =>
+		it("should create notification", async () =>
 			request(app)
-				.post("/api/currencies")
+				.post("/api/notifications")
 				.set("Accept", "application/json")
-				.send(currency)
+				.send(notification)
 				.expect("Content-Type", /json/)
 				.expect(HTTPStatusCode.OK)
 				.then((res) => {
 					expect(res.body).toHaveProperty("id");
-					expect(res.body.code).toBe("NGN");
+					expect(res.body.status).toBe(NotificationStatus.UNREAD);
 				}));
 	});
 });

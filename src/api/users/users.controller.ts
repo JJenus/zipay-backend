@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import * as userService from "./users.service";
 import User, { UserAttributes, UserUpdateAttributes } from "./users.model";
 import { ParamsWithId } from "../../interfaces/ParamsWithId";
-import * as AppUtil from "../../common/AppUtil";
+import * as AppUtil from "../../common/appUtil";
 
 export async function createUser(
 	req: Request<{}, Partial<User>, UserAttributes>,

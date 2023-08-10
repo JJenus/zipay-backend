@@ -36,7 +36,7 @@ export const updateBalance = async (update: updateAccount) => {
 		const balance = account.amount + update.amount;
 
 		account.setDataValue("amount", balance);
-		account.save();
+		await account.save();
 	} catch (error) {
 		throw new Error("Unable to update balance");
 	}
@@ -57,7 +57,7 @@ export const updateCurrency = async (update: updateAccount) => {
 		}
 
 		account.setDataValue("currencyId", update.currencyId);
-		account.save();
+		await account.save();
 	} catch (error) {
 		throw new Error("Unable to update currency");
 	}

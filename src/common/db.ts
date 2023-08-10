@@ -15,7 +15,7 @@ let sequelize: Sequelize = new Sequelize(db, user, pass, {
 	},
 });
 
-console.log(process.env.NODE_ENV);
+// console.log(process.env.NODE_ENV);
 
 // if (process.env.NODE_ENV === "test") {
 // 	sequelize = new Sequelize({

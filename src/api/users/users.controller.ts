@@ -73,9 +73,6 @@ export async function findUserByEmail(
 		);
 		res.json(user);
 	} catch (error) {
-		if (error instanceof Error) {
-			console.log("Error message: ", error.message);
-		}
 		next(error);
 	}
 }

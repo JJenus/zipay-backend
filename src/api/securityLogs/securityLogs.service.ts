@@ -15,7 +15,7 @@ export const findUserSecurityLogs = async (
 		}
 		return result;
 	} catch (error) {
-		throw new Error("Unable to fetch notifications");
+		throw new Error("Unable to fetch logs");
 	}
 };
 

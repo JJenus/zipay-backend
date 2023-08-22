@@ -41,6 +41,6 @@ Currency.init(
 	}
 );
 
-Currency.sync();
+Currency.sync({ alter: true });
 
 export default Currency;

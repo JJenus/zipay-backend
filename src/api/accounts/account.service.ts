@@ -62,3 +62,17 @@ export const updateCurrency = async (update: updateAccount) => {
 		throw new Error("Unable to update currency");
 	}
 };
+
+export const findUserAccount = async (id: string): Promise<Account> => {
+	try {
+		const account = await Account.findOne({ where: { userId: id } });
+		if (account === null) throw new Error("Account not found");
+		return account;
+	} catch (error) {
+		if (error instanceof Error) {
+			if (error.message.includes("not found"))
+				throw new Error(error.message);
+		}
+		throw new Error("Unauthorized currency update");
+	}
+};

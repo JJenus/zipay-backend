@@ -1,6 +1,8 @@
 // import { debugLogger } from "../../common/logger";
 import { ZodError, ZodIssue, ZodIssueCode } from "zod";
 import User, { UserAttributes, UserUpdateAttributes } from "./users.model";
+import bcrypt from "bcrypt";
+
 
 export async function findAll(): Promise<User[]> {
 	try {
@@ -37,6 +39,10 @@ export async function createUser(
 	}
 
 	try {
+
+		const passwordHash = await bcrypt.hash(userData.password, 10);
+
+		userData.password = passwordHash;
 		const user = await User.create(userData);
 		return user.toJSON();
 	} catch (error) {
@@ -51,7 +57,7 @@ export async function findUserByEmail(email: string): Promise<Partial<User>> {
 		if (!user) {
 			throw new Error();
 		}
-		return user!.toJSON();
+		return user;
 	} catch (error) {
 		// console.log(error);
 		throw new Error("User not found");

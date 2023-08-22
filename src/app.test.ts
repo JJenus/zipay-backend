@@ -21,6 +21,6 @@ describe("GET /", () => {
 			.expect(HTTPStatusCode.OK)
 			.then((res) => {
 				expect(res.body).toHaveProperty("message");
-				expect(res.body.message).toBe("Welcome to statsset api");
+				expect(res.body.message).toBe("Welcome to zipay api");
 			}));
 });

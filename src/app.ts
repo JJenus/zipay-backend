@@ -5,10 +5,18 @@ import cors from "cors";
 import helmet from "helmet";
 import MessageResponse from "./interfaces/MessageResponse";
 import * as middlewares from "./common/middlewares";
+import jwt from "jsonwebtoken";
 
 import api from "./api";
 
-require("dotenv").config();
+const dotenv = require("dotenv");
+
+// Load environment variables based on NODE_ENV
+if (process.env.NODE_ENV === "production") {
+	dotenv.config({ path: ".env.prod" });
+} else {
+	dotenv.config({ path: ".env.dev" });
+}
 
 const app = express();
 
@@ -31,8 +39,14 @@ if (!process.env.DEBUG) {
 app.use(expressWinston.logger(loggerOptions));
 
 app.get("/", (req: Request, res: Response<MessageResponse>) => {
+	const token = jwt.sign({
+		name: "Bongi",
+		age: "Ladi"
+	}, "secretKey", { expiresIn: '1h' });
+	console.log(token)
+	console.log(jwt.verify(token, "secretKey"))
 	res.json({
-		message: "Welcome to statsset api",
+		message: "Welcome to zipay api",
 	});
 });
 

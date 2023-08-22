@@ -9,6 +9,9 @@ import currencyRouter from "./currencies/currencies.routes";
 import notificationRouter from "./notifications/notifications.routes";
 import securityLogRouter from "./securityLogs/securityLogs.routes";
 import beneficiaryRouter from "./beneficiaries/beneficiaries.routes";
+import transactionRouter from "./transactions/transactions.routes";
+import authRouter from "./auth/auth.routes";
+import { verifyToken } from "../common/middlewares";
 
 const apiRouter = Router();
 
@@ -18,11 +21,13 @@ apiRouter.get("/", (req: Request, res: Response<MessageResponse>) => {
 	});
 });
 
-apiRouter.use("/users", usersRouter);
-apiRouter.use("/app-settings", appSettingsRouter);
-apiRouter.use("/currencies", currencyRouter);
-apiRouter.use("/notifications", notificationRouter);
-apiRouter.use("/security-logs", securityLogRouter);
-apiRouter.use("/beneficiaries", beneficiaryRouter);
+apiRouter.use("/users", verifyToken, usersRouter);
+apiRouter.use("/app-settings", verifyToken, appSettingsRouter);
+apiRouter.use("/currencies", verifyToken, currencyRouter);
+apiRouter.use("/notifications", verifyToken, notificationRouter);
+apiRouter.use("/security-logs", verifyToken, securityLogRouter);
+apiRouter.use("/beneficiaries", verifyToken, beneficiaryRouter);
+apiRouter.use("/transactions", verifyToken, transactionRouter);
+apiRouter.use("/auth", authRouter);
 
 export default apiRouter;

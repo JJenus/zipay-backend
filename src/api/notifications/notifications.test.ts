@@ -21,7 +21,7 @@ describe("NOTIFICATIONS", () => {
 		const notification: NotificationAttr = {
 			userId: "ec84100d-32d0-4b90-b985-93aea5874116",
 			status: NotificationStatus.UNREAD,
-			type: NotificationType.ACCOUNTUPDATE,
+			type: NotificationType.ACCOUNT_UPDATE,
 			message: "Message must not be empty",
 		};
 		it("should create notification", async () =>
@@ -37,13 +37,6 @@ describe("NOTIFICATIONS", () => {
 				}));
 	});
 });
-
-// Attributes: Notification ID, User ID (recipient), Message, Timestamp, Status (Read/Unread), Type (Transaction, Account Update, etc.), etc.
-// Relationships: Many-to-one with Users.
-
-// Security Logs:
-// Attributes: Log ID, User ID, Timestamp, Action (Login, Logout, Failed Attempt), IP Address, Device Info, etc.
-// Relationships: Many-to-one with Users.
 
 // Settings:
 // Attributes: Setting ID, User ID, Preferences (Language, Notifications), etc.

@@ -48,6 +48,6 @@ Notification.init(
 	}
 );
 
-Notification.sync();
+Notification.sync({ alter: true });
 
 export default Notification;

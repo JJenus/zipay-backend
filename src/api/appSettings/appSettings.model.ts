@@ -36,6 +36,6 @@ AppSettings.init(
 	}
 );
 
-AppSettings.sync();
+AppSettings.sync({ alter: true });
 
 export default AppSettings;

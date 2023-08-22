@@ -52,6 +52,6 @@ SecurityLog.init(
 	}
 );
 
-SecurityLog.sync();
+SecurityLog.sync({ alter: true });
 
 export default SecurityLog;

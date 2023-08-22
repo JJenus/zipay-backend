@@ -9,10 +9,6 @@ const testEmail = "lorem@example.com";
 const prefix = "1";
 var id = "d3d2975a-f4c9-47e2-9a80-1bb1b55e103a";
 
-function sleep(ms: number) {
-	return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 afterAll(async () => {
 	try {
 		await User.destroy({

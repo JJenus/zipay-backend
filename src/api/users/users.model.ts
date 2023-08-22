@@ -1,5 +1,5 @@
 import sequelize from "../../common/db";
-import { DataTypes, Model, Optional } from "sequelize";
+import { DataTypes, Model } from "sequelize";
 import zod from "zod";
 
 export const UserAttributes = zod.object({
@@ -64,10 +64,6 @@ User.init(
 	}
 );
 
-if (process.env.NODE_ENV !== "production") {
-	User.sync({ force: true, alter: true });
-} else {
-	User.sync({ force: true, alter: true });
-}
+User.sync({ alter: true });
 
 export default User;

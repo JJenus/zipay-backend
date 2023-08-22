@@ -50,6 +50,6 @@ Beneficiary.init(
 	}
 );
 
-Beneficiary.sync();
+Beneficiary.sync({ alter: true });
 
 export default Beneficiary;

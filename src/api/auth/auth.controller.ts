@@ -72,6 +72,10 @@ export const loginUser = async (
 			throw new Error("Invalid credentials");
 		}
 	} catch (error) {
+		res.status(HTTPStatusCode.AUTHORIZATION_ERROR);
+		if(error instanceof Error){
+			error.message = "Invalid credentials";
+		}
 		next(error);
 	}
 };

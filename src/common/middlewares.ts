@@ -28,6 +28,9 @@ export function errorHandler(
 	if (error.message.toLocaleLowerCase().includes("not found")) {
 		res.status(HTTPStatusCode.NOT_FOUND);
 	}
+	else if(error.message.toLocaleLowerCase().includes("already exists")){
+		res.status(HTTPStatusCode.CONFLICT)
+	}
 
 	const response: ErrorResponse = {
 		message: error.message,
@@ -38,12 +41,30 @@ export function errorHandler(
 	};
 
 	if (error instanceof ZodError) {
-		if (error.errors[0].message.toLocaleLowerCase().includes("required")) {
-			response.message = `${
-				error.errors[0].path[0]
-			} ${error.errors[0].message.toLocaleLowerCase()}`;
-			res.status(HTTPStatusCode.BAD_REQUEST);
-		} else response.message = error.errors[0].message;
+		if (error.errors.length == 1) {
+			if (
+				error.errors[0].message.toLocaleLowerCase().includes("required")
+			) {
+				res.status(HTTPStatusCode.BAD_REQUEST);
+				response.message = `${
+					error.errors[0].path[0]
+				} ${error.errors[0].message.toLocaleLowerCase()}`;
+			} else response.message = error.errors[0].message;
+		} else {
+			const errors: string[] = [];
+			error.errors.forEach((error) => {
+				let message;
+				if (error.message.toLocaleLowerCase().includes("required")) {
+					res.status(HTTPStatusCode.BAD_REQUEST);
+					message = `${
+						error.path[0]
+					} ${error.message.toLocaleLowerCase()}`;
+				} else message = error.message;
+				errors.push(message);
+			});
+
+			response.message = errors;
+		}
 	}
 
 	res.json(response);

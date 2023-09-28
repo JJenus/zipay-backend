@@ -6,4 +6,5 @@ export const enum HTTPStatusCode {
 	NOT_FOUND = 404,
 	AUTHORIZATION_ERROR = 401,
 	BAD_REQUEST = 400,
+	CONFLICT = 409,
 }

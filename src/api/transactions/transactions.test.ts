@@ -20,13 +20,13 @@ describe("TRANSACTIONS: ", () => {
 
 	describe("POST /api/transactions", () => {
 		const beneficiary: BeneficiaryAttr = {
-			userId: "d3d2975a-f4c9-47e2-9a80-1bb1b55e103a",
+			userId: "49d5ce8e-5273-44b9-b449-7a3ce278efb5",
 			name: "Ikeme fula",
 			destinationAccount: "kilade@efs.com",
 			bank: "paypal",
 		};
 		const transaction: TransactionAttr = {
-			senderId: "d3d2975a-f4c9-47e2-9a80-1bb1b55e103a",
+			senderId: "49d5ce8e-5273-44b9-b449-7a3ce278efb5",
 			receiverId: "d3d2975a-f4c9-47e2-9a80-1bb1b55e103a",
 			amount: 0,
 			type: TransactionTypes.DEBIT,

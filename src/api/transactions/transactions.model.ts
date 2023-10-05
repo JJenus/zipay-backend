@@ -33,6 +33,11 @@ class Transaction extends Model<TransactionAttr> implements TransactionAttr {
 	declare type: TransactionTypes;
 	declare notes: string;
 	declare beneficiary: BeneficiaryAttr;
+
+	// public toJSON(): Partial<UserAttributes> {
+	// 	const { password, ...values } = { ...this.get() };
+	// 	return values;
+	// }
 }
 
 Transaction.init(

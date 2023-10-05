@@ -1,7 +1,7 @@
 enum AccountStatus {
 	ACTIVE = "active",
 	CLOSED = "closed",
-	FROSEN = "frosen",
+	FROZEN = "frozen",
 }
 
 export default AccountStatus;

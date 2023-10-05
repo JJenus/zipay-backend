@@ -10,7 +10,9 @@ import notificationRouter from "./notifications/notifications.routes";
 import securityLogRouter from "./securityLogs/securityLogs.routes";
 import beneficiaryRouter from "./beneficiaries/beneficiaries.routes";
 import transactionRouter from "./transactions/transactions.routes";
+import accountRouter from "./accounts/account.routes"
 import authRouter from "./auth/auth.routes";
+
 import { verifyToken } from "../common/middlewares";
 
 const apiRouter = Router();
@@ -28,6 +30,8 @@ apiRouter.use("/notifications", verifyToken, notificationRouter);
 apiRouter.use("/security-logs", verifyToken, securityLogRouter);
 apiRouter.use("/beneficiaries", verifyToken, beneficiaryRouter);
 apiRouter.use("/transactions", verifyToken, transactionRouter);
+apiRouter.use("/account", verifyToken, accountRouter);
+
 apiRouter.use("/auth", authRouter);
 
 export default apiRouter;

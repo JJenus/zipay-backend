@@ -66,6 +66,6 @@ User.init(
 	}
 );
 
-User.sync({ alter: true });
+User.sync();
 
 export default User;

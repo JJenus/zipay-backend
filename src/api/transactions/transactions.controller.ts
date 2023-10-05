@@ -13,11 +13,10 @@ import {
 	NotificationType,
 } from "../notifications/notifications";
 import Notification from "../notifications/notifications.model";
-import { ERROR } from "sqlite3";
 
 export const findUserTransactions = async (
 	req: Request<ParamsWithId>,
-	res: Response<Transaction[]>,
+	res: Response<TransactionAttr[]>,
 	next: NextFunction
 ) => {
 	try {
@@ -25,21 +24,33 @@ export const findUserTransactions = async (
 			req.params.id
 		);
 
+		const trans: TransactionAttr[] = [];
+
 		// console.log("Transactions: ", transactions)
 
 		const beneficiaryQueries = transactions.map(async (transaction) => {
-			console.log(transaction.beneficiaryId)
-			transaction.beneficiary = await Beneficiaries.findBeneficiaryById(
-				transaction.beneficiaryId
-			);
+			// console.log(transaction.beneficiaryId);
+			const tran: TransactionAttr = transaction.toJSON();
+
+			if (transaction.beneficiaryId) {
+				const beneficiary = await Beneficiaries.findBeneficiaryById(
+					transaction.beneficiaryId
+				);
+				transaction.setAttributes("beneficiary", beneficiary);
+				tran.beneficiary = beneficiary;
+				console.log(tran);
+			}
+			trans.push(tran);
 		});
 
 		await Promise.all(beneficiaryQueries);
 
-		res.json(transactions);
+		// console.log(transactions);
+
+		res.json(trans);
 	} catch (error) {
-		if(error instanceof Error){
-			console.log("Find Error: ", error.message)
+		if (error instanceof Error) {
+			console.log("Find Error: ", error.message);
 		}
 		next(error);
 	}
@@ -59,6 +70,12 @@ export const createTransaction = async (
 			throw new Error("Beneficiary is required");
 		}
 
+		// Save beneficiary and retrieve id
+		const beneficiary: Beneficiary = await Beneficiaries.createBeneficiary(
+			transaction.beneficiary!
+		);
+		transaction.beneficiaryId = beneficiary.id;
+
 		transaction.status = TransactionStatus.PENDING;
 		// save user transaction
 		transactionLog = await Transactions.createTransaction(transaction);
@@ -74,12 +91,6 @@ export const createTransaction = async (
 		}
 		const balance: number = senderAccount.amount - transaction.amount;
 		senderAccount.setAttributes("amount", balance);
-
-		// Save beneficiary and retrieve id
-		const beneficiary: Beneficiary = await Beneficiaries.createBeneficiary(
-			transaction.beneficiary!
-		);
-		transaction.beneficiaryId = beneficiary.id;
 
 		// update sender account
 		await senderAccount.save();
@@ -113,6 +124,7 @@ export const createTransaction = async (
 
 		// notify sender: This shouldn't interrupt a successful transaction
 		try {
+			transactionLog.save();
 			const notification: Notification =
 				await Notifications.createNotification({
 					userId: senderAccount.id,

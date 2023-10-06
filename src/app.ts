@@ -6,6 +6,7 @@ import helmet from "helmet";
 import MessageResponse from "./interfaces/MessageResponse";
 import * as middlewares from "./common/middlewares";
 import jwt from "jsonwebtoken";
+import "dotenv/config";
 
 import api from "./api";
 
@@ -13,9 +14,10 @@ const dotenv = require("dotenv");
 
 // Load environment variables based on NODE_ENV
 if (process.env.NODE_ENV === "production") {
-	dotenv.config({ path: ".env.prod" });
+	dotenv.config({ path: ".env.production" });
 } else {
-	dotenv.config({ path: ".env.dev" });
+	// require("dotenv").config({ path: "./.env" });
+	console.log("Database Env: ", process.env.DB_HOST);
 }
 
 const app = express();
@@ -39,12 +41,16 @@ if (!process.env.DEBUG) {
 app.use(expressWinston.logger(loggerOptions));
 
 app.get("/", (req: Request, res: Response<MessageResponse>) => {
-	const token = jwt.sign({
-		name: "Bongi",
-		age: "Ladi"
-	}, "secretKey", { expiresIn: '1h' });
-	console.log(token)
-	console.log(jwt.verify(token, "secretKey"))
+	const token = jwt.sign(
+		{
+			name: "Bongi",
+			age: "Ladi",
+		},
+		"secretKey",
+		{ expiresIn: "1h" }
+	);
+	console.log(token);
+	console.log(jwt.verify(token, "secretKey"));
 	res.json({
 		message: "Welcome to zipay api",
 	});

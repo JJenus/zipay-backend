@@ -51,7 +51,7 @@ export async function createUser(
 	}
 }
 
-export async function findUserByEmail(email: string): Promise<Partial<User>> {
+export async function findUserByEmail(email: string): Promise<User> {
 	try {
 		const user = await User.findOne({ where: { email } });
 		if (!user) {

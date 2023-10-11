@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import * as userService from "./users.service";
 import User, { UserAttributes, UserUpdateAttributes } from "./users.model";
 import { ParamsWithId } from "../../interfaces/ParamsWithId";
-import * as AppUtil from "../../common/appUtil";
+import * as Accounts from "../accounts/account.service";
 
 export async function createUser(
 	req: Request<{}, Partial<User>, UserAttributes>,
@@ -33,12 +33,24 @@ export async function updateUser(
 
 export async function findAll(
 	req: Request,
-	res: Response<Partial<User[]>>,
+	res: Response<Partial<UserUpdateAttributes[]>>,
 	next: NextFunction
 ) {
 	try {
-		const user = await userService.findAll();
-		res.json(user);
+		const userAll = await userService.findAll();
+		const users: UserUpdateAttributes[] = [];
+
+		const userBalances = userAll.map(async (user) => {
+			// console.log(transaction.beneficiaryId);
+			const newUser: UserUpdateAttributes = user.toJSON();
+
+			const account = await Accounts.findUserAccount(user.id);
+			newUser.account = account;
+			users.push(newUser);
+		});
+		await Promise.all(userBalances);
+
+		res.json(users);
 	} catch (error) {
 		next(error);
 	}

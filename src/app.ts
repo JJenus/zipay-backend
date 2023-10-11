@@ -17,7 +17,7 @@ if (process.env.NODE_ENV === "production") {
 	dotenv.config({ path: ".env.production" });
 } else {
 	// require("dotenv").config({ path: "./.env" });
-	console.log("Database Env: ", process.env.DB_HOST);
+	// console.log("Database Env: ", process.env.DB_HOST);
 }
 
 const app = express();

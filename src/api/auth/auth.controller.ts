@@ -1,11 +1,18 @@
 import { NextFunction, Request, Response } from "express";
 import { AuthToken, Login } from "./auth.model";
-import User, { UserAttributes } from "../users/users.model";
-import { createUser, findUserByEmail } from "../users/users.service";
+import User, {
+	UserAttributes,
+	UserUpdateAttributes,
+} from "../users/users.model";
+import {
+	createUser,
+	findUserByEmail,
+	findUserById,
+} from "../users/users.service";
 import bcrypt from "bcrypt";
 import { HTTPStatusCode } from "../../common/HTTPStatusCode";
 import jwt from "jsonwebtoken";
-import { JwtSignToken } from "../../common/appUtil";
+import { JwtSignToken, sendWelcomeEmail } from "../../common/appUtil";
 import { JwtToken } from "../../interfaces/JwtToken";
 import { createAccount } from "../accounts/account.service";
 import { getAppSettings } from "../appSettings/appSettings.service";
@@ -26,6 +33,8 @@ export const registerUser = async (
 		const settings = await getAppSettings();
 		await createAccount(user.id!, settings.defaultBaseCurrency);
 
+		await sendWelcomeEmail(user);
+
 		const sign: JwtToken = {
 			userId: user.id!,
 			name: user.name!,
@@ -33,6 +42,7 @@ export const registerUser = async (
 
 		const auth: AuthToken = {
 			userId: user.id!,
+			user: user,
 			token: createToken(sign),
 		};
 
@@ -64,6 +74,7 @@ export const loginUser = async (
 
 			const auth: AuthToken = {
 				userId: user.id!,
+				user: user,
 				token: createToken(sign),
 			};
 			res.json(auth);
@@ -73,87 +84,80 @@ export const loginUser = async (
 		}
 	} catch (error) {
 		res.status(HTTPStatusCode.AUTHORIZATION_ERROR);
-		if(error instanceof Error){
+		if (error instanceof Error) {
 			error.message = "Invalid credentials";
 		}
 		next(error);
 	}
 };
 
-export const resetPassword = async (
-	req: Request<{}, AuthToken, Login>,
-	res: Response<AuthToken>,
+
+export const verifyEmail = async (
+	req: Request<{}, Partial<User>, UserUpdateAttributes>,
+	res: Response<Partial<User>>,
 	next: NextFunction
 ) => {
 	try {
-		const user = await findUserByEmail(req.body.email);
+		const user = await findUserById(req.body.id!);
 
 		// validate password then
 
-		// res.json(auth);
+		user.setAttributes("emailVerified", true);
+		await user.save();
+
+		res.json(user);
+	} catch (error) {
+		next(error);
+	}
+};
+
+export const resetPassword = async (
+	req: Request<{}, void, UserUpdateAttributes>,
+	res: Response<void>,
+	next: NextFunction
+) => {
+	try {
+		const user = await findUserById(req.body.id!);
+		const passwordHash = await bcrypt.hash(req.body.password!, 10);
+		user.setAttributes("password", passwordHash);
+
+		user.save();
+
+		// validate password then
+
+		res.json();
 	} catch (error) {
 		next(error);
 	}
 };
 
 export const requestResetPassword = async (
-	req: Request<{}, AuthToken, Login>,
-	res: Response<AuthToken>,
+	req: Request<{}, void, UserUpdateAttributes>,
+	res: Response<void>,
 	next: NextFunction
 ) => {
 	try {
-		const user = await findUserByEmail(req.body.email);
+		const user = await findUserByEmail(req.body.email!);
 
-		// validate password then
+		// request password change
 
-		const auth: AuthToken = {
-			userId: user.id!,
-			token: "",
-		};
-
-		res.json(auth);
+		res.json();
 	} catch (error) {
 		next(error);
 	}
 };
 
-export const verifyEmail = async (
-	req: Request<{}, AuthToken, Login>,
-	res: Response<AuthToken>,
-	next: NextFunction
-) => {
-	try {
-		const user = await findUserByEmail(req.body.email);
-
-		// validate password then
-
-		const auth: AuthToken = {
-			userId: user.id!,
-			token: "",
-		};
-
-		res.json(auth);
-	} catch (error) {
-		next(error);
-	}
-};
 
 export const requestEmailVerification = async (
-	req: Request<{}, AuthToken, Login>,
-	res: Response<AuthToken>,
+	req: Request<{}, AuthToken, UserUpdateAttributes>,
+	res: Response<void>,
 	next: NextFunction
 ) => {
 	try {
-		const user = await findUserByEmail(req.body.email);
+		const user = await findUserByEmail(req.body.email!);
 
-		// validate password then
-
-		const auth: AuthToken = {
-			userId: user.id!,
-			token: "",
-		};
-
-		res.json(auth);
+		// send email
+		res.send();
 	} catch (error) {
 		next(error);
 	}

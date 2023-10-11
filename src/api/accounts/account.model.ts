@@ -5,7 +5,7 @@ import UserAccountStatus from "./account.status";
 import AccountStatus from "./account.status";
 import { Currency } from "../../interfaces/Currency";
 
-const AccountAttr = zod.object({
+export const AccountAttr = zod.object({
 	id: zod.string().uuid().optional(),
 	userId: zod.string().uuid(),
 	currencyId: zod.string().uuid(),

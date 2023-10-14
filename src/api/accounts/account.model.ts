@@ -6,17 +6,24 @@ import AccountStatus from "./account.status";
 import { Currency } from "../../interfaces/Currency";
 
 export const AccountAttr = zod.object({
-	id: zod.string().uuid().optional(),
+	id: zod.string().uuid("Invalid Account Id").optional(),
 	userId: zod.string().uuid(),
-	currencyId: zod.string().uuid(),
+	currencyId: zod.string(),
 	amount: zod.number(),
 	status: zod.nativeEnum(UserAccountStatus),
 });
 
+export const updateBalance = zod.object({
+	email: zod.string(),
+	amount: zod.number(),
+});
+
+export type updateBalance = zod.infer<typeof updateBalance>;
+
 export const updateAccount = zod.object({
-	id: zod.string().uuid().optional(),
+	id: zod.string().uuid("Invalid Account Id").optional(),
 	userId: zod.string().uuid(),
-	currencyId: zod.string().uuid().optional(),
+	currencyId: zod.string().optional(),
 	amount: zod.number().optional(),
 	status: zod.nativeEnum(UserAccountStatus).optional(),
 });

@@ -103,7 +103,7 @@ export const verifyToken = (req: any, res: any, next: any) => {
 	} else {
 		try {
 			const payload = jwt.verify(token, JwtSignToken);
-			console.log(payload);
+			// console.log(payload);
 			next();
 		} catch (error) {
 			if (error instanceof Error) {

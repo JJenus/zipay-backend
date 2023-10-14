@@ -6,11 +6,11 @@ import { ParamsWithId } from "../../interfaces/ParamsWithId";
 
 const router = Router();
 
-router.post(
-	"/",
-	validateRequest({ body: UserAttributes }),
-	userController.createUser
-);
+// router.post(
+// 	"/",
+// 	validateRequest({ body: UserAttributes }),
+// 	userController.createUser
+// );
 router.get("/", userController.findAll);
 router.put(
 	"/:id",

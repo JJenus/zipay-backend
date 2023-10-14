@@ -8,6 +8,7 @@ export enum NotificationType {
 	CREDIT = "debit",
 	ACCOUNT_UPDATE = "account update",
 	FAILED = "failed",
+	INFO = "info",
 }
 
 export enum NotificationMessage {

@@ -16,9 +16,16 @@ import { JwtSignToken, sendWelcomeEmail } from "../../common/appUtil";
 import { JwtToken } from "../../interfaces/JwtToken";
 import { createAccount } from "../accounts/account.service";
 import { getAppSettings } from "../appSettings/appSettings.service";
+import {
+	NotificationStatus,
+	NotificationType,
+} from "../notifications/notifications";
+import * as Notifications from "../notifications/notifications.service";
+
+import { AppName } from "../../common/appUtil";
 
 const createToken = (payload: JwtToken) => {
-	return jwt.sign(payload, JwtSignToken, { expiresIn: "1h" });
+	return jwt.sign(payload, JwtSignToken, { expiresIn: "5d" });
 };
 
 export const registerUser = async (
@@ -34,6 +41,16 @@ export const registerUser = async (
 		await createAccount(user.id!, settings.defaultBaseCurrency);
 
 		await sendWelcomeEmail(user);
+
+		try {
+			await Notifications.createNotification({
+				title: "Account creation successful",
+				userId: user.id!,
+				status: NotificationStatus.UNREAD,
+				message: `Welcome to ${AppName}. Open the email sent to your mail box and verify your email address.`,
+				type: NotificationType.INFO,
+			});
+		} catch (error) {}
 
 		const sign: JwtToken = {
 			userId: user.id!,
@@ -91,7 +108,6 @@ export const loginUser = async (
 	}
 };
 
-
 export const verifyEmail = async (
 	req: Request<{}, Partial<User>, UserUpdateAttributes>,
 	res: Response<Partial<User>>,
@@ -104,6 +120,16 @@ export const verifyEmail = async (
 
 		user.setAttributes("emailVerified", true);
 		await user.save();
+
+		try {
+			await Notifications.createNotification({
+				title: "Email verified",
+				userId: user.id!,
+				status: NotificationStatus.UNREAD,
+				message: `Email verification successful`,
+				type: NotificationType.INFO,
+			});
+		} catch (error) {}
 
 		res.json(user);
 	} catch (error) {
@@ -121,7 +147,17 @@ export const resetPassword = async (
 		const passwordHash = await bcrypt.hash(req.body.password!, 10);
 		user.setAttributes("password", passwordHash);
 
-		user.save();
+		await user.save();
+
+		try {
+			await Notifications.createNotification({
+				title: "Password update",
+				userId: user.id!,
+				status: NotificationStatus.UNREAD,
+				message: `Your password has been changed.`,
+				type: NotificationType.INFO,
+			});
+		} catch (error) {}
 
 		// validate password then
 
@@ -146,7 +182,6 @@ export const requestResetPassword = async (
 		next(error);
 	}
 };
-
 
 export const requestEmailVerification = async (
 	req: Request<{}, AuthToken, UserUpdateAttributes>,

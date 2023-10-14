@@ -13,6 +13,7 @@ import {
 	NotificationType,
 } from "../notifications/notifications";
 import Notification from "../notifications/notifications.model";
+import { findUserById } from "../users/users.service";
 
 export const findUserTransactions = async (
 	req: Request<ParamsWithId>,
@@ -109,11 +110,13 @@ export const createTransaction = async (
 
 			// notify receiver
 			try {
+				const sender = await findUserById(transaction.senderId);
 				const notification: Notification =
 					await Notifications.createNotification({
+						title: "Credit alert",
 						userId: receiverAccount.id,
 						status: NotificationStatus.UNREAD,
-						message: "",
+						message: `Received ${transaction.amount} from ${sender.name}`,
 						type: NotificationType.CREDIT,
 					});
 			} catch (error) {}
@@ -127,9 +130,10 @@ export const createTransaction = async (
 			transactionLog.save();
 			const notification: Notification =
 				await Notifications.createNotification({
-					userId: senderAccount.id,
+					title: "Transfer Successful",
+					userId: transaction.senderId,
 					status: NotificationStatus.UNREAD,
-					message: "",
+					message: `${transaction.amount} sent successfully`,
 					type: NotificationType.DEBIT,
 				});
 		} catch (error) {}
@@ -158,6 +162,7 @@ export const createTransaction = async (
 			}
 			const notification: Notification =
 				await Notifications.createNotification({
+					title: "Transaction error",
 					userId: transaction.senderId,
 					status: NotificationStatus.UNREAD,
 					message: message,

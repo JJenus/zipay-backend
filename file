@@ -1,12 +1,12 @@
 Server
-ssh fibre@ssh-fibre.alwaysdata.net
-pisw-fd: 5olidpayout
+s-f-sh fibre@ssh-fibre.alwaysdata.net
+pisw-fd: 5olidpayout)
 
 zip -r my_archive.zip my_folder
 unzip your_file.zip
 
 rsync -avz --delete ./ fibre@ssh-fibre.alwaysdata.net:/fibre/
 
-scp zipay.zip fibre@ssh-fibre.alwaysdata.net:/home/fibre
+scp src.zip fibre@ssh-fibre.alwaysdata.net:/home/fibre
 
 Note: npm i is required on server to restart app.

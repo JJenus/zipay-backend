@@ -4,13 +4,13 @@ import sequelize from "../../common/db";
 
 export const BeneficiaryAttr = zod.object({
 	id: zod.string().uuid("invalid beneficiary id").optional(),
-	userId: zod.string().uuid("invalid user id"),
+	userId: zod.string().uuid("invalid user id").optional(),
 	name: zod.string(),
 	destinationAccount: zod
 		.string()
 		.email()
 		.or(zod.string().uuid())
-		.or(zod.string().min(10)),
+		.or(zod.string().min(3)),
 	bank: zod.string().min(3),
 });
 
@@ -33,6 +33,8 @@ Beneficiary.init(
 		},
 		userId: {
 			type: DataTypes.STRING,
+			defaultValue: null,
+			allowNull: true
 		},
 		name: {
 			type: DataTypes.STRING,

@@ -12,7 +12,7 @@ import { BeneficiaryAttr } from "../beneficiaries/beneficiaries.model";
 export const TransactionAttr = zod.object({
 	id: zod.string().uuid("invalid transaction id").optional(),
 	senderId: zod.string().uuid("invalid sender id"),
-	receiverId: zod.string().uuid("invalid receiver id"),
+	receiverId: zod.string().uuid("invalid receiver id").optional(),
 	beneficiaryId: zod.string().uuid("invalid beneficiary id").optional(),
 	amount: zod.number(),
 	status: zod.nativeEnum(TransactionStatus).optional(),

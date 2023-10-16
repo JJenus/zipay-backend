@@ -21,7 +21,7 @@ import {
 	NotificationType,
 } from "../notifications/notifications";
 import * as Notifications from "../notifications/notifications.service";
-
+import * as Accounts from "../accounts/account.service";
 import { AppName } from "../../common/appUtil";
 
 const createToken = (payload: JwtToken) => {
@@ -40,9 +40,10 @@ export const registerUser = async (
 		const settings = await getAppSettings();
 		await createAccount(user.id!, settings.defaultBaseCurrency);
 
-		await sendWelcomeEmail(user);
+		
 
 		try {
+			await sendWelcomeEmail(user);
 			await Notifications.createNotification({
 				title: "Account creation successful",
 				userId: user.id!,
@@ -50,7 +51,13 @@ export const registerUser = async (
 				message: `Welcome to ${AppName}. Open the email sent to your mail box and verify your email address.`,
 				type: NotificationType.INFO,
 			});
-		} catch (error) {}
+		} catch (error) {
+			console.log(error)
+		}
+
+		const account = await Accounts.findUserAccount(user.id!);
+			const newUser: UserUpdateAttributes = user;
+			newUser.account = account;
 
 		const sign: JwtToken = {
 			userId: user.id!,
@@ -59,7 +66,7 @@ export const registerUser = async (
 
 		const auth: AuthToken = {
 			userId: user.id!,
-			user: user,
+			user: newUser,
 			token: createToken(sign),
 		};
 
@@ -84,6 +91,9 @@ export const loginUser = async (
 		);
 
 		if (validPassword) {
+			const account = await Accounts.findUserAccount(user.id);
+			const newUser: UserUpdateAttributes = user.toJSON();
+			newUser.account = account;
 			const sign: JwtToken = {
 				userId: user.id!,
 				name: user.name!,
@@ -91,7 +101,7 @@ export const loginUser = async (
 
 			const auth: AuthToken = {
 				userId: user.id!,
-				user: user,
+				user: newUser,
 				token: createToken(sign),
 			};
 			res.json(auth);

@@ -88,10 +88,10 @@ export const createTransaction = async (
 
 		if (senderAccount.amount < transaction.amount) {
 			res.status(422);
-			const error = new Error("Insufficient balance");
+			throw new Error("Insufficient balance");
 		}
 		const balance: number = senderAccount.amount - transaction.amount;
-		senderAccount.setAttributes("amount", balance);
+		senderAccount.setDataValue("amount", balance);
 
 		// update sender account
 		await senderAccount.save();
@@ -122,12 +122,12 @@ export const createTransaction = async (
 			} catch (error) {}
 		}
 
-		transactionLog.setAttributes("status", TransactionStatus.COMPLETED);
+		transactionLog.setDataValue("status", TransactionStatus.COMPLETED);
 		// TODO: create notification websocket and pass this notification
 
 		// notify sender: This shouldn't interrupt a successful transaction
 		try {
-			transactionLog.save();
+			await transactionLog.save();
 			const notification: Notification =
 				await Notifications.createNotification({
 					title: "Transfer Successful",
@@ -142,11 +142,11 @@ export const createTransaction = async (
 	} catch (error) {
 		try {
 			if (transactionLog) {
-				transactionLog.setAttributes(
+				transactionLog.setDataValue(
 					"status",
 					TransactionStatus.FAILED
 				);
-				transactionLog.save();
+				await transactionLog.save();
 			} else {
 				transaction.status = TransactionStatus.FAILED;
 				Transactions.createTransaction(transaction);

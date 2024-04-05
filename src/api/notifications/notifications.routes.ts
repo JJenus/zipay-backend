@@ -22,4 +22,9 @@ router.put(
 	notificationController.updateNotification
 );
 
+router.put(
+	"/all",
+	notificationController.updateAllNotification
+);
+
 export default router;

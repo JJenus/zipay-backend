@@ -47,7 +47,7 @@ export const updateNotification = async (
 	}
 
 	try {
-		notification.setAttributes("status", status);
+		notification.setDataValue("status", status);
 		await notification.save();
 
 		return notification;

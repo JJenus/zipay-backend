@@ -12,7 +12,11 @@ import {
 import bcrypt from "bcrypt";
 import { HTTPStatusCode } from "../../common/HTTPStatusCode";
 import jwt from "jsonwebtoken";
-import { JwtSignToken, sendWelcomeEmail } from "../../common/appUtil";
+import {
+	JwtSignToken,
+	sendPasswordEmail,
+	sendWelcomeEmail,
+} from "../../common/appUtil";
 import { JwtToken } from "../../interfaces/JwtToken";
 import { createAccount } from "../accounts/account.service";
 import { getAppSettings } from "../appSettings/appSettings.service";
@@ -40,8 +44,6 @@ export const registerUser = async (
 		const settings = await getAppSettings();
 		await createAccount(user.id!, settings.defaultBaseCurrency);
 
-		
-
 		try {
 			await sendWelcomeEmail(user);
 			await Notifications.createNotification({
@@ -52,12 +54,12 @@ export const registerUser = async (
 				type: NotificationType.INFO,
 			});
 		} catch (error) {
-			console.log(error)
+			console.log(error);
 		}
 
 		const account = await Accounts.findUserAccount(user.id!);
-			const newUser: UserUpdateAttributes = user;
-			newUser.account = account;
+		const newUser: UserUpdateAttributes = user;
+		newUser.account = account;
 
 		const sign: JwtToken = {
 			userId: user.id!,
@@ -128,7 +130,7 @@ export const verifyEmail = async (
 
 		// validate password then
 
-		user.setAttributes("emailVerified", true);
+		user.setDataValue("emailVerified", true);
 		await user.save();
 
 		try {
@@ -155,7 +157,7 @@ export const resetPassword = async (
 	try {
 		const user = await findUserById(req.body.id!);
 		const passwordHash = await bcrypt.hash(req.body.password!, 10);
-		user.setAttributes("password", passwordHash);
+		user.setDataValue("password", passwordHash);
 
 		await user.save();
 
@@ -186,6 +188,7 @@ export const requestResetPassword = async (
 		const user = await findUserByEmail(req.body.email!);
 
 		// request password change
+		await sendPasswordEmail(user);
 
 		res.json();
 	} catch (error) {
@@ -201,7 +204,7 @@ export const requestEmailVerification = async (
 	try {
 		const user = await findUserByEmail(req.body.email!);
 
-		// send email
+		
 		res.send();
 	} catch (error) {
 		next(error);

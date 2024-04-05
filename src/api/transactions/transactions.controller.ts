@@ -122,7 +122,7 @@ export const createTransaction = async (
 			} catch (error) {}
 		}
 
-		transactionLog.setDataValue("status", TransactionStatus.COMPLETED);
+		transactionLog.setDataValue("status", TransactionStatus.PROCESSING);
 		// TODO: create notification websocket and pass this notification
 
 		// notify sender: This shouldn't interrupt a successful transaction
@@ -130,10 +130,10 @@ export const createTransaction = async (
 			await transactionLog.save();
 			const notification: Notification =
 				await Notifications.createNotification({
-					title: "Transfer Successful",
+					title: "Transfer Processing",
 					userId: transaction.senderId,
 					status: NotificationStatus.UNREAD,
-					message: `${transaction.amount} sent successfully`,
+					message: `${transaction.amount} processing`,
 					type: NotificationType.DEBIT,
 				});
 		} catch (error) {}
@@ -142,10 +142,7 @@ export const createTransaction = async (
 	} catch (error) {
 		try {
 			if (transactionLog) {
-				transactionLog.setDataValue(
-					"status",
-					TransactionStatus.FAILED
-				);
+				transactionLog.setDataValue("status", TransactionStatus.FAILED);
 				await transactionLog.save();
 			} else {
 				transaction.status = TransactionStatus.FAILED;
@@ -171,4 +168,43 @@ export const createTransaction = async (
 		} catch (error) {}
 		next(error);
 	}
+};
+
+export const updateTransaction = async (
+	req: Request<{}, Transaction, TransactionAttr>,
+	res: Response<Transaction>,
+	next: NextFunction
+) => {
+	let transactionLog: Transaction = await Transactions.findTransactionById(
+		req.body.id!
+	);
+
+	if (!transactionLog) {
+		throw new Error("Invalid transaction id");
+	}
+
+	// save user transaction
+	transactionLog.setDataValue("status", req.body.status);
+	transactionLog.setDataValue("notes", req.body.notes);
+	// TODO: create notification websocket and pass this notification
+
+	// notify sender: This shouldn't interrupt a successful transaction
+	await transactionLog.save();
+
+	const notification: Notification = await Notifications.createNotification({
+		title:
+			transactionLog.status === TransactionStatus.COMPLETED
+				? "Transaction Successful"
+				: "Transfer Processing",
+		userId: transactionLog.senderId,
+		status: NotificationStatus.UNREAD,
+		message: `${transactionLog.amount} ${
+			transactionLog.status === TransactionStatus.AWAITING
+				? "Sent to bank"
+				: transactionLog.status
+		}`,
+		type: NotificationType.DEBIT,
+	});
+
+	res.json(transactionLog);
 };

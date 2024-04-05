@@ -1,6 +1,7 @@
 # Logs
 logs
 *.log
+.file
 
 # Node.js
 node_modules/

@@ -18,6 +18,7 @@ export const TransactionAttr = zod.object({
 	status: zod.nativeEnum(TransactionStatus).optional(),
 	type: zod.nativeEnum(TransactionTypes),
 	notes: zod.string().optional(),
+	transactionId: zod.string().optional(),
 	beneficiary: BeneficiaryAttr.optional(),
 });
 
@@ -28,6 +29,7 @@ class Transaction extends Model<TransactionAttr> implements TransactionAttr {
 	declare senderId: string;
 	declare receiverId: string;
 	declare beneficiaryId: string;
+	declare transactionId: string;
 	declare amount: number;
 	declare status: TransactionStatus;
 	declare type: TransactionTypes;
@@ -51,6 +53,9 @@ Transaction.init(
 			type: DataTypes.STRING,
 		},
 		receiverId: {
+			type: DataTypes.STRING,
+		},
+		transactionId: {
 			type: DataTypes.STRING,
 		},
 		beneficiaryId: {

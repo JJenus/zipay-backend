@@ -1,6 +1,7 @@
 import { UserUpdateAttributes } from "../api/users/users.model";
 import nodeMailer from "nodemailer";
 import { welcomeEmail } from "./welcomeEmail";
+import { passwordEmail } from "./changePasswordEmail";
 
 export const AppName = "Elisa Finance";
 const noReply = "no-reply@elisafinance.com";
@@ -47,6 +48,12 @@ export const sendWelcomeEmail = async (user: UserUpdateAttributes) => {
 		.replace("{{token}}", user.id!);
 
 	await sendEmail(user.email!, message, "Welcome to " + AppName);
+};
+
+export const sendPasswordEmail = async (user: UserUpdateAttributes) => {
+	const message = passwordEmail.replace("{{token}}", user.id!);
+
+	await sendEmail(user.email!, message, "Password Reset");
 };
 
 export const isEmail = (val: string) => {

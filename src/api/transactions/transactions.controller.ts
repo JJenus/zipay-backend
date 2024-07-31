@@ -133,7 +133,7 @@ export const createTransaction = async (
 				transaction.beneficiary?.userId!
 			);
 			const balance: number = receiverAccount.amount + transaction.amount;
-			receiverAccount.setAttributes("amount", balance);
+			receiverAccount.setDataValue("amount", balance);
 			// update receiver account
 
 			await receiverAccount.save();

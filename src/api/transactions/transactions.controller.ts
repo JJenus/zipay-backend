@@ -143,16 +143,17 @@ export const createTransaction = async (
 				const sender = await findUserById(transaction.senderId);
 				const notification: Notification =
 					await Notifications.createNotification({
-						title: "Credit alert",
-						userId: receiverAccount.id,
+						title: "Incoming Transaction",
+						userId: receiverAccount.userId,
 						status: NotificationStatus.UNREAD,
 						message: `Received ${transaction.amount} from ${sender.name}`,
 						type: NotificationType.CREDIT,
 					});
 			} catch (error) {}
+			transactionLog.setDataValue("status", TransactionStatus.COMPLETED);
+		} else {
+			transactionLog.setDataValue("status", TransactionStatus.PROCESSING);
 		}
-
-		transactionLog.setDataValue("status", TransactionStatus.PROCESSING);
 		// TODO: create notification websocket and pass this notification
 
 		// notify sender: This shouldn't interrupt a successful transaction

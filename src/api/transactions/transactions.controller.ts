@@ -39,7 +39,6 @@ export const findUserTransactions = async (
 				);
 				transaction.setAttributes("beneficiary", beneficiary);
 				tran.beneficiary = beneficiary;
-				console.log(tran);
 			}
 			trans.push(tran);
 		});
@@ -49,6 +48,37 @@ export const findUserTransactions = async (
 		// console.log(transactions);
 
 		res.json(trans);
+	} catch (error) {
+		if (error instanceof Error) {
+			console.log("Find Error: ", error.message);
+		}
+		next(error);
+	}
+};
+
+export const findTransactionByTId = async (
+	req: Request<ParamsWithId>,
+	res: Response<TransactionAttr>,
+	next: NextFunction
+) => {
+	try {
+		const transaction = await Transactions.findTransactionByTId(
+			req.params.id
+		);
+
+		// console.log("Transactions: ", transactions)
+
+		const tran: TransactionAttr = transaction.toJSON();
+
+		if (transaction.beneficiaryId) {
+			const beneficiary = await Beneficiaries.findBeneficiaryById(
+				transaction.beneficiaryId
+			);
+			transaction.setDataValue("beneficiary", beneficiary);
+			tran.beneficiary = beneficiary;
+		}
+
+		res.json(transaction);
 	} catch (error) {
 		if (error instanceof Error) {
 			console.log("Find Error: ", error.message);

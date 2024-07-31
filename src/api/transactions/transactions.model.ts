@@ -57,6 +57,7 @@ Transaction.init(
 		},
 		transactionId: {
 			type: DataTypes.STRING,
+			defaultValue: "hidden",
 		},
 		beneficiaryId: {
 			type: DataTypes.STRING,
@@ -80,6 +81,6 @@ Transaction.init(
 	}
 );
 
-Transaction.sync();
+Transaction.sync({ alter: true });
 
 export default Transaction;
